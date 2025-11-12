@@ -1,0 +1,62 @@
+Apoculus - 3D Image Generator
+Copyright (c) 2025 NQR
+
+This software is part of the NQR Labs ARG toolkit.
+Website: https://nqrlabs.com
+
+================================================================================
+
+THIRD-PARTY SOFTWARE
+
+This software does not include any third-party libraries or dependencies.
+
+Apoculus is built using:
+- Pure vanilla JavaScript (ES6+)
+- HTML5 Canvas API
+- CSS3
+- Web Font API (FontFace)
+
+All code is original and licensed under the MIT License.
+
+================================================================================
+
+BROWSER APIs USED
+
+This software relies on standard web platform APIs provided by modern browsers:
+
+- Canvas 2D Rendering Context
+  Standard: https://html.spec.whatwg.org/multipage/canvas.html
+  Used for: Image rendering and pixel manipulation
+
+- FontFace API
+  Standard: https://drafts.csswg.org/css-font-loading/
+  Used for: Custom font loading
+
+- File API
+  Standard: https://w3c.github.io/FileAPI/
+  Used for: User file uploads (fonts and images)
+
+- Typed Arrays (Uint8Array, Int32Array)
+  Standard: https://tc39.es/ecma262/#sec-typedarray-objects
+  Used for: Efficient pixel data processing
+
+All browser APIs are used in accordance with their respective specifications
+and are provided by the browser vendor under their own licenses.
+
+================================================================================
+
+ALGORITHM NOTES
+
+The autostereogram generation algorithm implemented in this software is based
+on well-established computer graphics techniques for single-image random-dot
+stereogram (SIRDS) generation, first popularized in the 1990s.
+
+The core algorithm uses depth-map-based disparity calculation and scanline
+processing, which are common techniques in the public domain.
+
+No patented algorithms or proprietary techniques are used.
+
+================================================================================
+
+For questions or concerns, please contact:
+https://github.com/NQRLabs/nqrlabs.github.io/issues
