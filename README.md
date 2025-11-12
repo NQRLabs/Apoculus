@@ -26,12 +26,16 @@ An autostereogram is a single-image stereogram (SIS) that creates the illusion o
 
 ### Image Support
 - **Upload Images** - PNG, JPG, GIF, and other web formats
-- **Automatic Processing** - Color images are converted to grayscale, dithered, and made transparent
-- **Floyd-Steinberg Dithering** - High-quality black & white conversion
-- **Invert Alpha** - Choose whether white or black becomes transparent
-- **Size Control** - Scale images to fit your composition (auto-reprocesses on resize, 4x multiplier for better visibility)
+- **Transparency Support** - Transparent pixels always map to background depth, regardless of other settings
+- **Grayscale-to-Depth Mapping** - Image brightness directly controls depth (white=near, black=far)
+- **Auto-Level Correction** - Automatically stretches contrast for washed-out scans
+- **Depth Algorithms** - Choose between direct mapping or shadow-aware processing:
+  - **Direct Grayscale Mapping** - Straightforward brightness-to-depth conversion
+  - **Shadow-Aware (Retinex-inspired)** - Separates lighting from surface brightness to prevent shadows from creating false depth holes
+- **Depth Gamma Control** - Adjust midtone depth distribution (0.6-1.4) for flatter or steeper curves
+- **Invert Depth** - Reverse depth mapping (black=near, white=far); transparent pixels always stay background
+- **Size Control** - Scale images to fit your composition (4x multiplier for better visibility)
 - **Depth Positioning** - Place images at any depth level
-- **Alpha Channel Detection** - Images with existing transparency are preserved as-is
 
 ### 3D Depth Control
 - **Depth Levels** - Position each layer from far background (0) to close foreground (100)
@@ -40,7 +44,7 @@ An autostereogram is a single-image stereogram (SIS) that creates the illusion o
 
 ### Pattern Customization
 - **Pattern Density** - Control the number of dots in the random pattern (2-8 dots per tile)
-- **Pattern Width** - Adjust the repeating tile size (48-96px)
+- **Pattern Width** - Adjust the repeating tile size (47-97px, prime numbers recommended for minimal artifacts)
 - **3D Effect Strength** - Adjust how dramatic the depth appears (0.3-1.5x)
 - **Output Size** - Generate images from 800px to 2000px wide
 - **Color Scheme** - Choose from multiple color options:
@@ -121,33 +125,47 @@ There are two viewing methods:
 
 Apoculus uses a depth-map-based autostereogram generation algorithm:
 
-1. **Image Processing** (for uploaded images without alpha)
-   - Convert RGB to grayscale using luminance formula (0.299R + 0.587G + 0.114B)
-   - Apply Floyd-Steinberg dithering for high-quality binary conversion
-   - Convert white (or black if inverted) to transparent alpha channel
-   - Preserve original image for re-processing when scaled
+1. **Image Processing**
+   - Convert RGB to grayscale using Rec. 709 coefficients (0.2126R + 0.7152G + 0.0722B)
+   - Preserve alpha channel from original image (transparency)
+   - Apply auto-level correction to stretch histogram for optimal contrast (ignoring transparent pixels)
+   - Two depth mapping algorithms available:
+     - **Direct Mapping**: Grayscale value directly determines depth
+     - **Shadow-Aware (Retinex-inspired)**: Separates illumination from reflectance
 
-2. **Depth Map Generation**
+2. **Shadow-Aware Depth Algorithm**
+   - Based on classic Retinex theory (Land & McCann, 1971)
+   - Estimates illumination field via large-scale Gaussian blur
+   - Divides image by illumination to extract reflectance (albedo)
+   - Maps albedo to depth, preventing shadows from creating false depth holes
+   - Uses only unpatented, fundamental signal processing techniques
+   - Reference: Land, E. H., & McCann, J. J. (1971). "Lightness and retinex theory." *Journal of the Optical Society of America, 61*(1), 1-11.
+
+3. **Depth Map Generation**
    - Each layer is rendered to a grayscale depth map
-   - Brighter pixels = closer to viewer
+   - Grayscale values mapped to depth via configurable LUT (with gamma correction)
+   - Brighter pixels = closer to viewer (or inverted if "Invert Depth" enabled)
+   - **Transparent pixels always map to depth 0 (background)**, regardless of invert setting
    - Layers are composited by depth priority (nearer layers occlude farther ones)
-   - Soft Gaussian blur reduces edge artifacts
+   - Soft blur reduces edge artifacts
 
-3. **Random Pattern Strip**
-   - A narrow vertical strip of random dots is generated using hash-based randomization
-   - Hash function ensures uniform distribution across the entire image
-   - Strip width (typically 48-96px) determines the viewing comfort
+4. **Random Pattern Strip**
+   - Blue-noise or hash-based random dot pattern
+   - Prime-number strip widths (47-97px) minimize visible stratification artifacts
    - Pattern density affects detail resolution
    - Color schemes apply different color palettes to the random pattern
 
-4. **Scanline Processing**
+5. **Scanline Processing with Union-Find**
    - For each horizontal scanline:
      - Pixels are linked based on depth disparity
      - Disparity = depth × scaling factor
+     - Union-find algorithm groups linked pixels
      - Occlusion handling: nearer depths take priority
 
-5. **Pixel Assignment**
-   - Linked pixels receive the same color from the pattern strip
+6. **Pixel Assignment**
+   - Each pixel group (union-find set) receives a single color from the pattern strip
+   - Phase offset computed from group center for visual symmetry
+   - Row-wise phase shifts break horizontal stratification
    - Creates the repeating pattern with depth-based offsets
    - Final image encodes 3D information in 2D pattern
 
@@ -177,13 +195,17 @@ Apoculus uses a depth-map-based autostereogram generation algorithm:
 - Avoid thin, delicate fonts
 
 **Images:**
-- High-contrast images work best
-- Silhouettes and simple shapes are easier to see
-- Color images are automatically converted using dithering
-- Use "Invert Alpha" if your subject should be transparent instead of the background
-- Images with existing alpha transparency are preserved as-is
-- Simple logos, icons, and text work great
-- Avoid very detailed or noisy photographs (dithering may lose detail)
+- Grayscale images with good contrast work best
+- Color images are automatically converted to grayscale with auto-leveling
+- **PNG images with transparency** - Transparent backgrounds automatically stay at background depth
+- Use **Direct Mapping** for simple, evenly-lit images
+- Use **Shadow-Aware** for images with strong shadows or uneven lighting
+- Adjust **Depth Gamma** (0.6-1.4) to control how midtones map to depth
+- Use "Invert Depth" to reverse depth mapping (useful for inverted subjects like white-on-black logos)
+- Transparent pixels always remain at background depth, even when inverted
+- Photographs, logos, icons, and text all work well
+- Auto-level correction helps with washed-out or low-contrast images
+- Simple shapes are easier to see in 3D than complex patterns
 
 **Composition:**
 - Start with one or two layers
@@ -193,7 +215,8 @@ Apoculus uses a depth-map-based autostereogram generation algorithm:
 - Center important elements
 
 **Pattern Settings:**
-- Default settings (Density: 4, Width: 72px) work for most cases
+- Default settings (Density: 4, Width: 73px) work for most cases
+- Use prime-number widths (53, 59, 61, 67, 71, 73, 79, 83, 89, 97) to minimize visible artifacts
 - Larger pattern width = easier to view but less detail
 - Higher density = more detail but harder to view
 - 3D Effect Strength of 0.8 is a good starting point
