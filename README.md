@@ -1,3 +1,5 @@
+<img alt="lucyra-logo" src="./assets/images/logo.png" style="margin-left:auto; margin-right:auto; display:block; width:200px;"/>
+
 # Apoculus - 3D Image Generator
 
 Create mesmerizing autostereograms (3D images) from text and images. View hidden 3D content by crossing or diverging your eyes - no special glasses needed!
