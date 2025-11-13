@@ -39,4 +39,16 @@ for running ONNX models in the browser.
 
 ================================================================================
 
+JSZip
+Copyright (c) 2009-2016 Stuart Knightley, David Duponchel, Franz Buchinger, António Afonso
+Licensed under MIT License (dual-licensed MIT OR GPL-3.0, used under MIT)
+
+Repository: https://github.com/Stuk/jszip
+Website: https://stuk.github.io/jszip/
+
+This component provides ZIP file creation capabilities for batch export
+of video frame sequences.
+
+================================================================================
+
 For complete license texts, see LICENSES-THIRD-PARTY.md

@@ -1,4 +1,4 @@
-<img alt="lucyra-logo" src="./assets/images/logo.png" style="margin-left:auto; margin-right:auto; display:block; width:200px;"/>
+<img alt="Apoculus logo" src="./assets/images/logo.png" style="margin-left:auto; margin-right:auto; display:block; width:200px;"/>
 
 # Apoculus - 3D Image Generator
 
@@ -208,7 +208,9 @@ Apoculus uses a depth-map-based autostereogram generation algorithm:
 - **Mobile Support** - Works on iOS Safari and Android Chrome
 - **WebGPU Support** - Depth Anything V2 requires WebGPU (Chrome/Edge 113+) or falls back to WASM
 - **Font Upload** - Uses FontFace API (widely supported)
-- **No Dependencies** - Pure vanilla JavaScript, no frameworks (ONNX Runtime loaded via CDN for AI features)
+- **Minimal Dependencies** - Pure vanilla JavaScript, no frameworks
+  - ONNX Runtime Web (CDN) - For AI depth prediction
+  - JSZip (CDN) - For batch video frame export
 
 ## Best Practices
 
@@ -271,8 +273,8 @@ Apoculus uses a depth-map-based autostereogram generation algorithm:
 Apoculus runs entirely in your browser. No data is uploaded to any server:
 - ✅ All images and text stay on your device
 - ✅ No tracking or analytics
-- ✅ No external dependencies or CDNs
-- ✅ Works offline after initial load
+- ✅ Works offline after initial load (libraries are cached)
+- ⚠️ Initial load requires CDN access for ONNX Runtime Web and JSZip libraries
 
 ## License
 
