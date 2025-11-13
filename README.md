@@ -10,6 +10,16 @@ Create mesmerizing autostereograms (3D images) from text and images. View hidden
 
 An autostereogram is a single-image stereogram (SIS) that creates the illusion of 3D depth from a 2D pattern. Popular in the 1990s, these images encode depth information in a repeating random-dot pattern. When viewed correctly, hidden 3D shapes pop out of the flat image.
 
+## Setup (Optional AI Features)
+
+Apoculus works out-of-the-box with direct grayscale and shadow-aware depth algorithms. For AI-powered depth estimation using **Depth Anything V2**:
+
+1. Download the ONNX model file (~97MB) following instructions in `models/README.md`
+2. Place the model in the `Apoculus/models/` directory
+3. The AI algorithm will then be available in the Depth Algorithm dropdown
+
+**Note:** The AI algorithm requires WebGPU (Chrome/Edge 113+) or falls back to WebAssembly. Direct and Shadow-Aware algorithms work on all browsers without any model download.
+
 ## Features
 
 ### Layer Management
@@ -29,7 +39,8 @@ An autostereogram is a single-image stereogram (SIS) that creates the illusion o
 - **Transparency Support** - Transparent pixels always map to background depth, regardless of other settings
 - **Grayscale-to-Depth Mapping** - Image brightness directly controls depth (white=near, black=far)
 - **Auto-Level Correction** - Automatically stretches contrast for washed-out scans
-- **Depth Algorithms** - Choose between direct mapping or shadow-aware processing:
+- **Depth Algorithms** - Choose between AI-powered, direct mapping, or shadow-aware processing:
+  - **Depth Anything V2 (AI)** - State-of-the-art AI depth prediction (requires model download, see `models/README.md`)
   - **Direct Grayscale Mapping** - Straightforward brightness-to-depth conversion
   - **Shadow-Aware (Retinex-inspired)** - Separates lighting from surface brightness to prevent shadows from creating false depth holes
 - **Depth Gamma Control** - Adjust midtone depth distribution (0.6-1.4) for flatter or steeper curves
@@ -129,11 +140,26 @@ Apoculus uses a depth-map-based autostereogram generation algorithm:
    - Convert RGB to grayscale using Rec. 709 coefficients (0.2126R + 0.7152G + 0.0722B)
    - Preserve alpha channel from original image (transparency)
    - Apply auto-level correction to stretch histogram for optimal contrast (ignoring transparent pixels)
-   - Two depth mapping algorithms available:
+   - Three depth mapping algorithms available:
+     - **Depth Anything V2 (AI)**: Deep learning-based monocular depth estimation
      - **Direct Mapping**: Grayscale value directly determines depth
      - **Shadow-Aware (Retinex-inspired)**: Separates illumination from reflectance
 
-2. **Shadow-Aware Depth Algorithm**
+2. **Depth Anything V2 (AI) Algorithm**
+   - State-of-the-art monocular depth estimation using deep learning
+   - Based on Vision Transformer (ViT-Small) architecture trained on diverse datasets
+   - Runs entirely in-browser using ONNX Runtime Web (WebGPU/WASM)
+   - Processes images at 518×518 resolution with letterboxing for aspect preservation
+   - Applies ImageNet normalization: mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+   - Outputs are normalized using 2nd-98th percentile for robustness to outliers
+   - Inverted so white=near, black=far (consistent with other algorithms)
+   - Best for photos, complex scenes, and realistic depth from natural images
+   - Optional model download (~97MB), see `models/README.md` for setup
+   - ONNX model provided by Hugging Face ONNX Community: https://huggingface.co/onnx-community/depth-anything-v2-small
+   - Reference: Yang et al. (2024). "Depth Anything V2" https://arxiv.org/abs/2406.09414
+   - License: Apache 2.0 (see `LICENSES-THIRD-PARTY.md`)
+
+3. **Shadow-Aware Depth Algorithm**
    - Based on classic Retinex theory (Land & McCann, 1971)
    - Estimates illumination field via large-scale Gaussian blur
    - Divides image by illumination to extract reflectance (albedo)
@@ -141,7 +167,7 @@ Apoculus uses a depth-map-based autostereogram generation algorithm:
    - Uses only unpatented, fundamental signal processing techniques
    - Reference: Land, E. H., & McCann, J. J. (1971). "Lightness and retinex theory." *Journal of the Optical Society of America, 61*(1), 1-11.
 
-3. **Depth Map Generation**
+4. **Depth Map Generation**
    - Each layer is rendered to a grayscale depth map
    - Grayscale values mapped to depth via configurable LUT (with gamma correction)
    - Brighter pixels = closer to viewer (or inverted if "Invert Depth" enabled)
@@ -149,20 +175,20 @@ Apoculus uses a depth-map-based autostereogram generation algorithm:
    - Layers are composited by depth priority (nearer layers occlude farther ones)
    - Soft blur reduces edge artifacts
 
-4. **Random Pattern Strip**
+5. **Random Pattern Strip**
    - Blue-noise or hash-based random dot pattern
    - Prime-number strip widths (47-97px) minimize visible stratification artifacts
    - Pattern density affects detail resolution
    - Color schemes apply different color palettes to the random pattern
 
-5. **Scanline Processing with Union-Find**
+6. **Scanline Processing with Union-Find**
    - For each horizontal scanline:
      - Pixels are linked based on depth disparity
      - Disparity = depth × scaling factor
      - Union-find algorithm groups linked pixels
      - Occlusion handling: nearer depths take priority
 
-6. **Pixel Assignment**
+7. **Pixel Assignment**
    - Each pixel group (union-find set) receives a single color from the pattern strip
    - Phase offset computed from group center for visual symmetry
    - Row-wise phase shifts break horizontal stratification
@@ -180,8 +206,9 @@ Apoculus uses a depth-map-based autostereogram generation algorithm:
 
 - **Modern Browsers** - Chrome, Firefox, Safari, Edge (latest versions)
 - **Mobile Support** - Works on iOS Safari and Android Chrome
+- **WebGPU Support** - Depth Anything V2 requires WebGPU (Chrome/Edge 113+) or falls back to WASM
 - **Font Upload** - Uses FontFace API (widely supported)
-- **No Dependencies** - Pure vanilla JavaScript, no frameworks
+- **No Dependencies** - Pure vanilla JavaScript, no frameworks (ONNX Runtime loaded via CDN for AI features)
 
 ## Best Practices
 
@@ -198,8 +225,10 @@ Apoculus uses a depth-map-based autostereogram generation algorithm:
 - Grayscale images with good contrast work best
 - Color images are automatically converted to grayscale with auto-leveling
 - **PNG images with transparency** - Transparent backgrounds automatically stay at background depth
-- Use **Direct Mapping** for simple, evenly-lit images
-- Use **Shadow-Aware** for images with strong shadows or uneven lighting
+- **Algorithm Selection:**
+  - Use **Depth Anything V2 (AI)** for photos, portraits, landscapes, and complex natural scenes
+  - Use **Direct Mapping** for simple, evenly-lit images, logos, and graphics
+  - Use **Shadow-Aware** for images with strong shadows or uneven lighting
 - Adjust **Depth Gamma** (0.6-1.4) to control how midtones map to depth
 - Use "Invert Depth" to reverse depth mapping (useful for inverted subjects like white-on-black logos)
 - Transparent pixels always remain at background depth, even when inverted

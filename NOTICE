@@ -1,62 +1,42 @@
-Apoculus - 3D Image Generator
+NOTICE
+
+Apoculus - 3D Autostereogram Generator
 Copyright (c) 2025 NQR
 
-This software is part of the NQR Labs ARG toolkit.
-Website: https://nqrlabs.com
+This software includes components from third-party sources:
 
 ================================================================================
 
-THIRD-PARTY SOFTWARE
+Depth Anything V2
+Copyright (c) 2024 The Depth Anything V2 Authors
+Licensed under the Apache License 2.0
 
-This software does not include any third-party libraries or dependencies.
+Authors: Lihe Yang, Bingyi Kang, Zilong Huang, Zhen Zhao, Xiaogang Xu,
+         Jiashi Feng, Hengshuang Zhao
 
-Apoculus is built using:
-- Pure vanilla JavaScript (ES6+)
-- HTML5 Canvas API
-- CSS3
-- Web Font API (FontFace)
+Original Repository: https://github.com/DepthAnything/Depth-Anything-V2
+Paper: "Depth Anything V2" (https://arxiv.org/abs/2406.09414)
 
-All code is original and licensed under the MIT License.
+ONNX Model Conversion:
+- Provided by Hugging Face ONNX Community
+- Model Repository: https://huggingface.co/onnx-community/depth-anything-v2-small
+- The ONNX conversion enables browser-based inference via ONNX Runtime Web
 
-================================================================================
-
-BROWSER APIs USED
-
-This software relies on standard web platform APIs provided by modern browsers:
-
-- Canvas 2D Rendering Context
-  Standard: https://html.spec.whatwg.org/multipage/canvas.html
-  Used for: Image rendering and pixel manipulation
-
-- FontFace API
-  Standard: https://drafts.csswg.org/css-font-loading/
-  Used for: Custom font loading
-
-- File API
-  Standard: https://w3c.github.io/FileAPI/
-  Used for: User file uploads (fonts and images)
-
-- Typed Arrays (Uint8Array, Int32Array)
-  Standard: https://tc39.es/ecma262/#sec-typedarray-objects
-  Used for: Efficient pixel data processing
-
-All browser APIs are used in accordance with their respective specifications
-and are provided by the browser vendor under their own licenses.
+This component is used for AI-based monocular depth estimation from RGB images.
+See LICENSES-THIRD-PARTY.md for the full Apache License 2.0 text.
 
 ================================================================================
 
-ALGORITHM NOTES
+ONNX Runtime Web
+Copyright (c) Microsoft Corporation
+Licensed under the MIT License
 
-The autostereogram generation algorithm implemented in this software is based
-on well-established computer graphics techniques for single-image random-dot
-stereogram (SIRDS) generation, first popularized in the 1990s.
+Repository: https://github.com/microsoft/onnxruntime
+Website: https://onnxruntime.ai/
 
-The core algorithm uses depth-map-based disparity calculation and scanline
-processing, which are common techniques in the public domain.
-
-No patented algorithms or proprietary techniques are used.
+This component provides WebGPU and WebAssembly inference capabilities
+for running ONNX models in the browser.
 
 ================================================================================
 
-For questions or concerns, please contact:
-https://github.com/NQRLabs/nqrlabs.github.io/issues
+For complete license texts, see LICENSES-THIRD-PARTY.md
